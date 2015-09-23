@@ -16,12 +16,12 @@ module StripeAch
   def self.base_url
     "https://#{api_key}:@api.stripe.com/v1"
   end
-  
+
   def self.request(url, method=:get, params={})
 
     unless @api_key
-      raise StripeAchError.new('No API key provided. 
-        Set your API key using "Stripe.api_key = <API-KEY>". 
+      raise StripeAchError.new('No API key provided.
+        Set your API key using "Stripe.api_key = <API-KEY>".
         You can generate API keys from the Stripe web interface.
         See https://stripe.com/api for details, or email support@stripe.com
         if you have any questions.')
@@ -48,7 +48,7 @@ module StripeAch
     rescue SocketError => e
       handle_restclient_error(e, api_base_url)
     rescue NoMethodError => e
-    
+
     rescue RestClient::ExceptionWithResponse => e
       if rcode = e.http_code and rbody = e.http_body
         handle_api_error(rcode, rbody)
@@ -63,22 +63,22 @@ module StripeAch
 
   def self.handle_restclient_error(e, api_base_url=nil)
     api_base_url = base_url unless api_base_url
-    connection_message = "Please check your internet connection and try again. 
+    connection_message = "Please check your internet connection and try again.
       If this problem persists, you should check Stripe's service status at
       https://twitter.com/stripestatus, or let us know at support@stripe.com."
-  
+
     case e
       when RestClient::RequestTimeout
         message = "Could not connect to Stripe (#{api_base_url}). #{connection_message}"
       when RestClient::ServerBrokeConnection
         message = "The connection to the server (#{api_base_url}) broke before the request completed. #{connection_message}"
       when RestClient::SSLCertificateNotVerified
-        message = "Could not verify Stripe's SSL certificate. 
+        message = "Could not verify Stripe's SSL certificate.
           Please make sure that your network is not intercepting certificates.
           (Try going to https://api.stripe.com/v1 in your browser.)
           If this problem persists, let us know at support@stripe.com."
       when SocketError
-        message = "Unexpected error communicating when trying to connect to Stripe. 
+        message = "Unexpected error communicating when trying to connect to Stripe.
           You may be seeing this message because your DNS is not working.
           To check, try running 'host stripe.com' from the command line."
       else
@@ -96,7 +96,7 @@ module StripeAch
     rescue JSON::ParserError, StripeAchError
       raise general_api_error(rcode, rbody)
     end
-    
+
     case rcode
     when 400, 404
      raise invalid_request_error error, rcode, rbody, error_obj
@@ -122,7 +122,7 @@ module StripeAch
   end
 
   def self.card_error(error, rcode, rbody, error_obj)
-    StripeAchError.new(error[:message], error[:param], error[:code], rcode, rbody, error_obj)
+    StripeAchError.new(error[:message], rcode, rbody, error_obj)
   end
 
   def self.api_error(error, rcode, rbody, error_obj)
